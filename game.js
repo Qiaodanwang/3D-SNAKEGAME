@@ -11,6 +11,7 @@ var boundGroup;
 var NPC;
 var cubeGroup;
 var GameStart = false;
+var info;
 
 
 
@@ -85,6 +86,7 @@ function Snake (color, initPos, isNpc) {
     this.snakeArr = snakeArr;
     this.direction = 40;
     this.isNpc = isNpc;
+    this.score = 0;
 }
 
 Snake.prototype.draw = function () {
@@ -109,7 +111,9 @@ Snake.prototype.move = function () {
      this.snakeArr.splice(1, 0, cube);
      if (this.eat()) {
          food = new getRandomFood();
+         this.score++;
          console.log("eat!");
+         console.log(this.score);
      } else {
          this.snakeArr.pop();
      }
@@ -133,11 +137,9 @@ Snake.prototype.move = function () {
      }
      if (this.head.x > 300 || this.head.x < -300 || this.head.z > 300 || this.head.z < -300){
         if(!this.isNpc){
-            // this.isover= true;
-            // stop();
             snake = new Snake("black",0,false);
         } else {
-            NPC = new Snake("red",Math.random() * 0x10,true);
+            NPC = new Snake("red",0,true);
         }   
         
     }
@@ -145,11 +147,9 @@ Snake.prototype.move = function () {
     for (var i = 1; i < this.snakeArr.length; i++) {
         if (this.snakeArr[i].x == this.head.x && this.snakeArr[i].z == this.head.z){
             if(!this.isNpc){
-                // this.isover= true;
-                // stop();
                 snake = new Snake("black",0,false);
             } else {
-                NPC = new Snake("red",Math.random() * 0x10,true);
+                NPC = new Snake("red",0,true);
             }
         }
     }
@@ -197,7 +197,6 @@ Snake.prototype.move = function () {
 function detectCollision() {
     for (var i = 0; i < NPC.snakeArr.length; i++) {
         if (NPC.snakeArr[i].x == snake.head.x && NPC.snakeArr[i].z == snake.head.z){
-            //stop();
             snake = new Snake("black",0,false);
             return;
         }
@@ -318,6 +317,15 @@ function init() {
         y:0,
         z:0
     });
+    info = document.createElement('div');
+    info.style.position = 'absolute';
+    info.style.top = '10px';
+    info.style.width = '100%';
+    info.style.textAlign = 'center';
+    info.style.fontSize = "30px";
+    info.style.fontFamily = "微软雅黑";
+    info.style.color = "red";
+    container.appendChild(info);
     //renderer.render( scene, camera );
 }
 
@@ -349,6 +357,10 @@ function render() {
     if(GameStart) {
         snake.move();
     }
+    
+    info.innerText = "Your score(black) is: "+snake.score +"             NP's score(red) is: "+NPC.score;
+    //container.remove(info);
+    container.appendChild(info);
     
     food.draw();
     //camera.lookAt( scene.position );
