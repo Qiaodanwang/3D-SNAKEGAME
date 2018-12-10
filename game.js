@@ -31,6 +31,7 @@ Cube.prototype.draw = function(isBound) {
         boundGroup.add(cube);
         console.log("adding into scene!");
         scene.add(boundGroup);
+        return;
     }
     cubeGroup.add(cube);
     scene.add(cubeGroup);
@@ -38,10 +39,10 @@ Cube.prototype.draw = function(isBound) {
 
 function initBound() {
 
-    for(var i = -350; i <= 350; i+=25){
-        var cube = new Cube(i,25,-350, 25,"red");
+    for(var i = -300; i <= 300; i+=25){
+        var cube = new Cube(i,0,-300, 25,"red");
         upperBound.splice(0,0,cube);
-        var cube1 = new Cube(i,25,350,25,"red");
+        var cube1 = new Cube(i,0,300,25,"red");
         lowerBound.splice(0,0,cube1);
     }
 
@@ -50,10 +51,10 @@ function initBound() {
         lowerBound[i].draw(true);
     }
 
-    for(var j = -350; j<=350; j+=25){
-        var cube = new Cube(-350,25,j,25,"red");
+    for(var j = -300; j<=300; j+=25){
+        var cube = new Cube(-300,0,j,25,"red");
         leftBound.push(cube);
-        var cube1 = new Cube(350,25,j,25,"red");
+        var cube1 = new Cube(300,0,j,25,"red");
         rightBound.push(cube1);
     }
 
@@ -75,7 +76,7 @@ function Snake (color, initPos, isNpc) {
 
     this.head = snakeArr[0];
     this.snakeArr = snakeArr;
-    this.direction = 39;
+    this.direction = 40;
     this.isNpc = isNpc;
 }
 
@@ -98,21 +99,21 @@ Snake.prototype.move = function () {
      }
      switch (this.direction) {
          case 37://左
-             this.head.x -= this.head.a;
+             this.head.z += this.head.a;
              break;
          case 38://上
-             this.head.z -= this.head.a;
+             this.head.x -= this.head.a;
              break;
          case 39: //右
-             this.head.x += this.head.a;
+             this.head.z -= this.head.a;
              break;
          case 40://下
-             this.head.z += this.head.a;
+             this.head.x += this.head.a;
              break;
          default:
              break;
      }
-     if (this.head.x > 450 || this.head.x < -500 || this.head.z > 450 || this.head.z < -500){
+     if (this.head.x > 300 || this.head.x < -300 || this.head.z > 300 || this.head.z < -300){
         if(!this.isNpc){
             this.isover= true;
             stop();
@@ -215,8 +216,8 @@ function init() {
 
     camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, -500, 1000);
     camera.position.x = 50;
-    camera.position.y = 50;
-    camera.position.z = 50;
+    camera.position.y = 200;
+    camera.position.z = 0;
 
     scene = new THREE.Scene();
 
@@ -242,8 +243,12 @@ function init() {
     container.appendChild( renderer.domElement );
 
     initBound();
-    camera.lookAt( scene.position );
-    renderer.render( scene, camera );
+    camera.lookAt({
+        x:0,
+        y:0,
+        z:0
+    });
+    //renderer.render( scene, camera );
 }
 
 var ani;
@@ -259,11 +264,17 @@ function start () {
 }
 
 function stop () {
-    if(ani) {
+    // if(ani) {
         cancelAnimationFrame(ani);
         clearTimeout(ani);
         ani = undefined;
-    }
+        scene.remove(boundGroup);
+        scene.remove(cubeGroup);
+        init();
+        //init();
+        start();
+        return;
+    // }
 }
 
 function render() {
@@ -271,13 +282,13 @@ function render() {
     scene.remove(cubeGroup);
     cubeGroup = new THREE.Object3D();
     snake.draw();
-    NPC.draw();
+    //NPC.draw();
     //NPC.move();
     if(GameStart) {
         snake.move();
     }
     food.draw();
-    camera.lookAt( scene.position );
+    //camera.lookAt( scene.position );
     renderer.render( scene, camera );
 }
 
