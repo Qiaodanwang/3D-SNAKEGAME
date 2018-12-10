@@ -264,17 +264,9 @@ function start () {
 }
 
 function stop () {
-    // if(ani) {
-        cancelAnimationFrame(ani);
-        clearTimeout(ani);
-        ani = undefined;
-        scene.remove(boundGroup);
-        scene.remove(cubeGroup);
-        init();
-        //init();
-        start();
-        return;
-    // }
+     if(ani) {
+        snake = new Snake("black",0,false);
+     }
 }
 
 function render() {
