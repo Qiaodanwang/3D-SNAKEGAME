@@ -2,6 +2,7 @@ var container, stats;
 var camera, scene, renderer;
 var boundScene;
 var snake, food;
+var testFood;
 var upperBound = [];
 var lowerBound = [];
 var leftBound = [];
@@ -66,8 +67,14 @@ function initBound() {
 
 function Snake (color, initPos, isNpc) {
     var snakeArr = [];
+    var indexX = 1;
+    var indexZ = 0;
+    if(isNpc){
+        indexX = getNumberInRange(-10, 9);
+        indexZ = getNumberInRange(-10, 9);
+    }
     for (var i = initPos; i < initPos+3; i++) {
-        var cube = new Cube(i*20, 20, 0, 20, 0xffffff);
+        var cube = new Cube(i*20*indexX, 20, 0+20*indexZ, 20, 0xffffff);
         snakeArr.splice(0,0,cube);
     }
     var head = snakeArr[0];
@@ -89,14 +96,25 @@ Snake.prototype.draw = function () {
     }
 }
 
+Snake.prototype.eat = function () {
+    if (this.head.x == food.x && this.head.z == food.z){
+        return true;
+    } else {
+        return false;
+    }
+}
+
 Snake.prototype.move = function () {
      var cube = new Cube(this.head.x, this.head.y, this.head.z, this.head.a, 0xffffff);
      this.snakeArr.splice(1, 0, cube);
-     if (isEat()) {
+     if (this.eat()) {
          food = new getRandomFood();
+         console.log("eat!");
      } else {
          this.snakeArr.pop();
      }
+     detectCollision();
+
      switch (this.direction) {
          case 37://左
              this.head.z += this.head.a;
@@ -115,17 +133,60 @@ Snake.prototype.move = function () {
      }
      if (this.head.x > 300 || this.head.x < -300 || this.head.z > 300 || this.head.z < -300){
         if(!this.isNpc){
-            this.isover= true;
-            stop();
-        }    
+            // this.isover= true;
+            // stop();
+            snake = new Snake("black",0,false);
+        } else {
+            NPC = new Snake("red",Math.random() * 0x10,true);
+        }   
         
     }
 
     for (var i = 1; i < this.snakeArr.length; i++) {
         if (this.snakeArr[i].x == this.head.x && this.snakeArr[i].z == this.head.z){
             if(!this.isNpc){
-                this.isover= true;
-                stop();
+                // this.isover= true;
+                // stop();
+                snake = new Snake("black",0,false);
+            } else {
+                NPC = new Snake("red",Math.random() * 0x10,true);
+            }
+        }
+    }
+
+    if(this.isNpc){
+        var curDir = this.direction;
+        var next = Math.floor(Math.random()*3);
+        if(curDir == 37) {
+            if(next == 0) {
+                this.direction = 38;
+            }
+            if(next == 1) {
+                this.direction = 40;
+            }
+        }
+        else if(curDir == 38){
+            if(next == 0) {
+                this.direction = 37;
+            }
+            if(next == 1) {
+                this.direction = 39;
+            }
+        }
+        else if(curDir == 39){
+            if(next == 0) {
+                this.direction = 38;
+            }
+            if(next == 1) {
+                this.direction = 40;
+            }
+        }
+        else if(curDir == 40){
+            if(next == 0) {
+                this.direction = 37;
+            }
+            if(next == 1) {
+                this.direction = 39;
             }
         }
     }
@@ -133,6 +194,22 @@ Snake.prototype.move = function () {
 
  }
 
+function detectCollision() {
+    for (var i = 0; i < NPC.snakeArr.length; i++) {
+        if (NPC.snakeArr[i].x == snake.head.x && NPC.snakeArr[i].z == snake.head.z){
+            //stop();
+            snake = new Snake("black",0,false);
+            return;
+        }
+    }
+
+    for (var i = 0; i < snake.snakeArr.length; i++) {
+        if (snake.snakeArr[i].x == NPC.head.x && snake.snakeArr[i].z == NPC.head.z){
+            NPC = new Snake("red",Math.random() * 0x10,true);
+            return;
+        }
+    }
+}
 function getNumberInRange (min,max) {
     var range = max-min;
     var r = Math.random();
@@ -158,13 +235,6 @@ function getRandomFood () {
     return cube;
 }
 
-function isEat () {
-    if (snake.head.x == food.x && snake.head.z == food.z){
-        return true;
-    } else {
-        return false;
-    }
-}
 
 document.onkeydown = function (e) {
     if(snake.isover) {
@@ -225,7 +295,7 @@ function init() {
     boundGroup = new THREE.Object3D();
     snake = new Snake("black",0,false);
     food = new getRandomFood();
-    NPC = new Snake("red",Math.random() * 0x10,true);
+    NPC = new Snake("red",0,true);
 
     var ambientLight = new THREE.AmbientLight( Math.random() * 0x10 );
     scene.add( ambientLight );
@@ -270,15 +340,16 @@ function stop () {
 }
 
 function render() {
-    //写变化
     scene.remove(cubeGroup);
     cubeGroup = new THREE.Object3D();
+    detectCollision();
     snake.draw();
-    //NPC.draw();
-    //NPC.move();
+    NPC.draw();
+    NPC.move();
     if(GameStart) {
         snake.move();
     }
+    
     food.draw();
     //camera.lookAt( scene.position );
     renderer.render( scene, camera );
